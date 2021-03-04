@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.ein.board.boardMapper">
+ 	
+ 	<select id="getBoardCnt" parameterType="com.ein.board.form.BoardForm" resultType="int">
+    
+    	SELECT COUNT(*)
+    	FROM ein_lee.BASIC_BOARD
+ 
+	</select>
+
+    <select id="getBoardList" parameterType="com.ein.board.form.BoardForm" resultType="com.ein.board.dto.BoardDto">
+        
+        SELECT BB_SEQ 
+             , BB_WRITER 
+             , BB_SUBJECT 
+             , BB_CONTENT 
+             , BB_HITS 
+             , CAST( DATE_FORMAT( BB_INS_DATE, '%Y-%m-%d' ) AS CHAR(19) ) AS BB_INS_DATE 
+        FROM BASIC_BOARD
+        ORDER BY BB_SEQ DESC 
+        LIMIT #{offset}, #{limit} 
+        
+    </select>
+    
+    <update id="updateBoardHits" parameterType="com.ein.board.form.BoardForm">
+    
+        UPDATE ein_lee.BASIC_BOARD 
+           SET BB_HITS = BB_HITS + 1             
+         WHERE BB_SEQ = #{bb_Seq}
+    
+    </update>
+    
+    <select id="getBoardDetail" parameterType="com.ein.board.form.BoardForm" resultType="com.ein.board.dto.BoardDto">
+    
+        SELECT BB_SEQ
+             , BB_WRITER  
+             , BB_SUBJECT  
+             , BB_CONTENT  
+             , BB_HITS 
+             , CAST( DATE_FORMAT( BB_INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS BB_INS_DATE 
+        FROM ein_lee.BASIC_BOARD
+        WHERE BB_SEQ = #{bb_Seq}
+    
+    </select>
+    
+    <insert id="insertBoard" parameterType="com.ein.board.form.BoardForm">
+    
+        INSERT 
+        INTO ein_lee.BASIC_BOARD 
+        (
+              BB_WRITER 
+              , BB_SUBJECT 
+              , BB_CONTENT  
+              , BB_INS_DATE 
+        ) 
+        VALUES 
+        (
+            #{bb_Writer}
+            , #{bb_Subject}
+            , #{bb_Content}
+            , NOW() 
+        )
+    
+    </insert>
+    
+    <delete id="deleteBoard" parameterType="com.ein.board.form.BoardForm">
+    
+        DELETE 
+        FROM BASIC_BOARD 
+        WHERE BB_SEQ = #{bb_Seq}
+    
+    </delete>
+    
+    <update id="updateBoard" parameterType="com.ein.board.form.BoardForm">
+    
+        UPDATE ein_lee.BASIC_BOARD 
+           SET BB_SUBJECT = #{bb_Subject}
+           	 , BB_WRITER  = #{bb_Writer}
+             , BB_CONTENT  = #{bb_Content}
+         WHERE BB_SEQ = #{bb_Seq}
+    
+    </update>
+    
+    
+    <!-- 첨부파일 관련 -->
+    <select id="getBoardCntAFile" parameterType="com.ein.board.form.BoardAFileForm" resultType="int">
+    
+    	SELECT COUNT(*)
+    	FROM ein_lee.BASIC_BOARD_A_FILE
+ 
+	</select>
+
+    <select id="getBoardListAFile" parameterType="com.ein.board.form.BoardAFileForm" resultType="com.ein.board.dto.BoardAFileDto">
+        
+        SELECT BB_A_SEQ  
+			 , BB_A_WRITER  
+			 , BB_A_SUBJECT  
+			 , BB_A_CONTENT  
+			 , BB_A_HITS  
+			 , CAST( DATE_FORMAT( BB_A_INS_DATE, '%Y-%m-%d' ) AS CHAR(19) ) AS BB_A_INS_DATE  
+		     , (SELECT COUNT(*) FROM BASIC_BOARD_A_FILE_ADD WHERE BASIC_BOARD_A_FILE_ADD.BB_A_SEQ = BASIC_BOARD_A_FILE.BB_A_SEQ AND DEL_YN = "Y") AS FileCnt 
+		FROM BASIC_BOARD_A_FILE
+		ORDER BY BB_A_SEQ DESC 
+        LIMIT #{offset}, #{limit} 
+
+    </select>
+    
+    <update id="updateBoardHitsAFile" parameterType="com.ein.board.form.BoardAFileForm">
+    
+        UPDATE ein_lee.BASIC_BOARD_A_FILE
+           SET BB_A_HITS = BB_A_HITS + 1             
+         WHERE BB_A_SEQ = #{bb_A_Seq}
+    
+    </update>
+    
+    <select id="getBoardDetailAFile" parameterType="com.ein.board.form.BoardAFileForm" resultType="com.ein.board.dto.BoardAFileDto">
+    
+        SELECT BB_A_SEQ  
+             , BB_A_WRITER  
+             , BB_A_SUBJECT  
+             , BB_A_CONTENT  
+             , BB_A_HITS  
+             , CAST( DATE_FORMAT( BB_A_INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS BB_A_INS_DATE 
+        FROM ein_lee.BASIC_BOARD_A_FILE
+        WHERE BB_A_SEQ = #{bb_A_Seq}
+    
+    </select>
+    
+    <select id="getBoardFileList" parameterType="com.ein.board.form.BoardFileForm" resultType="com.ein.board.dto.BoardFileDto">
+    
+        SELECT BB_A_SEQ
+             , FILE_NO
+             , FILE_NAME_KEY
+             , FILE_NAME
+             , FILE_PATH
+             , FILE_SIZE
+            , CAST( DATE_FORMAT( INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS INS_DATE
+            , DEL_YN
+        FROM ein_lee.BASIC_BOARD_A_FILE_ADD
+        WHERE BB_A_SEQ = #{bb_A_Seq}
+        AND DEL_YN = "Y"
+
+    </select>
+    
+    <insert id="insertBoardAFile" parameterType="com.ein.board.form.BoardAFileForm">
+    
+    	<selectKey resultType="int" keyProperty="bb_A_Seq" order="AFTER">
+ 
+            SELECT LAST_INSERT_ID()
+ 
+        </selectKey>
+    
+        INSERT 
+        INTO ein_lee.BASIC_BOARD_A_FILE
+        (
+              BB_A_WRITER  
+              , BB_A_SUBJECT  
+              , BB_A_CONTENT   
+              , BB_A_INS_DATE  
+        ) 
+        VALUES 
+        (
+            #{bb_A_Writer}
+            , #{bb_A_Subject}
+            , #{bb_A_Content}
+            , NOW() 
+        )
+    
+    </insert>
+    
+    <insert id="insertBoardFile" parameterType="com.ein.board.form.BoardFileForm">
+    
+        <selectKey resultType="int" keyProperty="file_no" order="BEFORE">
+            
+            SELECT IFNULL(MAX(FILE_NO), 0) + 1 
+            FROM ein_lee.BASIC_BOARD_A_FILE_ADD
+            WHERE BB_A_SEQ = #{bb_A_Seq}
+              
+        </selectKey>
+                
+        INSERT 
+        INTO BASIC_BOARD_A_FILE_ADD
+        (
+              BB_A_SEQ
+            , FILE_NO
+            , FILE_NAME_KEY
+            , FILE_NAME
+            , FILE_PATH
+            , FILE_SIZE
+            , INS_DATE     
+            , DEL_YN       
+        )
+        VALUES
+        (
+              #{bb_A_Seq}
+            , #{file_no}
+            , #{file_name_key}
+            , #{file_name}
+            , #{file_path}
+            , #{file_size}
+            , NOW()  
+            , "Y"
+        )    
+        
+    </insert>
+    
+    <delete id="deleteBoardAFile" parameterType="com.ein.board.form.BoardAFileForm">
+    
+        DELETE 
+        FROM BASIC_BOARD_A_FILE
+        WHERE BB_A_SEQ = #{bb_A_Seq}
+    
+    </delete>
+    
+    
+    <delete id="deleteBoardFile" parameterType="com.ein.board.form.BoardFileForm">
+    	
+        update ein_lee.BASIC_BOARD_A_FILE_ADD
+        set DEL_YN = "N"
+        WHERE BB_A_SEQ = #{bb_A_Seq} and FILE_NO = #{file_no}
+    
+    </delete>
+    
+    <update id="updateBoardAFile" parameterType="com.ein.board.form.BoardAFileForm">
+    
+        UPDATE ein_lee.BASIC_BOARD_A_FILE
+           SET BB_A_SUBJECT = #{bb_A_Subject}
+           	 , BB_A_WRITER  = #{bb_A_Writer}
+             , BB_A_CONTENT  = #{bb_A_Content}
+         WHERE BB_A_SEQ = #{bb_A_Seq}
+    
+    </update>
+    
+    <!-- 다중 첨부파일 관련 -->
+    <select id="getBoardCntThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm" resultType="int">
+    
+    	SELECT COUNT(*)
+    	FROM ein_lee.BASIC_BOARD_FILES
+ 
+	</select>
+
+    <select id="getBoardListThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm" resultType="com.ein.board.dto.BoardThreeFilesDto">
+        
+        SELECT BB_FILE_SEQ  
+			 , BB_FILE_WRITER   
+			 , BB_FILE_SUBJECT  
+			 , BB_FILE_CONTENT  
+			 , BB_FILE_HITS  
+			 , CAST( DATE_FORMAT( BB_FILE_INS_DATE, '%Y-%m-%d' ) AS CHAR(19) ) AS BB_FILE_INS_DATE  
+			 , (SELECT COUNT(*) FROM BASIC_BOARD_FILES_ADD WHERE BASIC_BOARD_FILES_ADD.BB_FILE_SEQ = BASIC_BOARD_FILES.BB_FILE_SEQ AND file_YN = "Y") AS FileCnt 
+		FROM BASIC_BOARD_FILES
+		ORDER BY BB_FILE_SEQ DESC
+        LIMIT #{offset}, #{limit} 
+
+    </select>
+    
+    <update id="updateBoardHitsThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm">
+    
+        UPDATE ein_lee.BASIC_BOARD_FILES
+           SET BB_FILE_HITS = BB_FILE_HITS + 1             
+         WHERE BB_FILE_SEQ = #{bb_File_Seq}
+    
+    </update>
+    
+    <select id="getBoardDetailThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm" resultType="com.ein.board.dto.BoardThreeFilesDto">
+    
+        SELECT BB_FILE_SEQ  
+             , BB_FILE_WRITER   
+             , BB_FILE_SUBJECT  
+             , BB_FILE_CONTENT  
+             , BB_FILE_HITS  
+             , CAST( DATE_FORMAT( BB_FILE_INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS BB_FILE_INS_DATE 
+        FROM ein_lee.BASIC_BOARD_FILES
+        WHERE BB_FILE_SEQ = #{bb_File_Seq}
+    
+    </select>
+    
+    <select id="getBoardFilesList" parameterType="com.ein.board.form.BoardFilesForm" resultType="com.ein.board.dto.BoardFilesDto">
+    
+        SELECT BB_FILE_SEQ
+             , FILE_NO
+             , FILE_NAME_KEY
+             , FILE_NAME
+             , FILE_PATH
+             , FILE_SIZE
+            , CAST( DATE_FORMAT( INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS INS_DATE
+            , file_YN
+        FROM ein_lee.BASIC_BOARD_FILES_ADD
+        WHERE BB_FILE_SEQ = #{bb_File_Seq} and file_YN="Y"
+
+    </select>
+    
+    <insert id="insertBoardThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm">
+    
+    	<selectKey resultType="int" keyProperty="bb_File_Seq" order="AFTER">
+ 
+            SELECT LAST_INSERT_ID()
+ 
+        </selectKey>
+    
+        INSERT 
+        INTO ein_lee.BASIC_BOARD_FILES
+        (
+              BB_FILE_WRITER   
+              , BB_FILE_SUBJECT  
+              , BB_FILE_CONTENT   
+              , BB_FILE_INS_DATE  
+        ) 
+        VALUES 
+        (
+            #{bb_File_Writer}
+            , #{bb_File_Subject}
+            , #{bb_File_Content}
+            , NOW() 
+        )
+    
+    </insert>
+    
+    <insert id="insertBoardFiles" parameterType="com.ein.board.form.BoardFilesForm">
+    
+        <selectKey resultType="int" keyProperty="file_no" order="BEFORE">
+            
+            SELECT IFNULL(MAX(FILE_NO), 0) + 1 
+            FROM ein_lee.BASIC_BOARD_FILES_ADD
+            WHERE BB_FILE_SEQ = #{bb_File_Seq}
+              
+        </selectKey>
+                
+        INSERT 
+        INTO BASIC_BOARD_FILES_ADD
+        (
+              BB_FILE_SEQ
+            , FILE_NO
+            , FILE_NAME_KEY
+            , FILE_NAME
+            , FILE_PATH
+            , FILE_SIZE
+            , INS_DATE    
+            , file_YN        
+        )
+        VALUES
+        (
+              #{bb_File_Seq}
+            , #{file_no}
+            , #{file_name_key}
+            , #{file_name}
+            , #{file_path}
+            , #{file_size}
+            , NOW()
+            , "Y"  
+        )    
+        
+    </insert>
+    
+    <delete id="deleteBoardThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm">
+    
+        DELETE 
+        FROM BASIC_BOARD_FILES
+        WHERE BB_FILE_SEQ = #{bb_File_Seq}
+    
+    </delete>
+    
+    
+    <delete id="deleteBoardFiles" parameterType="com.ein.board.form.BoardFilesForm">
+    	
+        update ein_lee.BASIC_BOARD_FILES_ADD
+		set file_yn = "N"
+		WHERE BB_FILE_SEQ = #{bb_File_Seq} and FILE_NO = #{file_no};
+    
+    </delete>
+    
+    <update id="updateBoardThreeFiles" parameterType="com.ein.board.form.BoardThreeFilesForm">
+    
+        UPDATE ein_lee.BASIC_BOARD_FILES
+           SET BB_FILE_SUBJECT = #{bb_File_Subject}
+           	 , BB_FILE_WRITER   = #{bb_File_Writer}
+             , BB_FILE_CONTENT  = #{bb_File_Content}
+         WHERE BB_FILE_SEQ = #{bb_File_Seq}
+    
+    </update>
+    
+    
+    <!-- ============================================================================================================== 
+		다중 첨부파일 관련 
+	 ==================================================================================================================	-->
+    <select id="getBoardCntComment" parameterType="com.ein.board.form.BoardCommentForm" resultType="int">
+    
+    	SELECT COUNT(*)
+    	FROM ein_lee.BASIC_BOARD_COMMENT
+ 
+	</select>
+
+    <select id="getBoardListComment" parameterType="com.ein.board.form.BoardCommentForm" resultType="com.ein.board.dto.BoardCommentDto">
+        
+        SELECT BB_COMMENT_SEQ  
+			 , BB_COMMENT_WRITER   
+			 , BB_COMMENT_SUBJECT  
+			 , BB_COMMENT_CONTENT  
+			 , BB_COMMENT_HITS  
+			 , CAST( DATE_FORMAT( BB_COMMENT_INS_DATE, '%Y-%m-%d' ) AS CHAR(19) ) AS BB_COMMENT_INS_DATE  
+			 , (SELECT COUNT(*) FROM BASIC_BOARD_COMMENT_ADD WHERE BASIC_BOARD_COMMENT_ADD.BB_COMMENT_SEQ = BASIC_BOARD_COMMENT.BB_COMMENT_SEQ AND FILE_YN = "Y") AS FileCnt 
+		FROM BASIC_BOARD_COMMENT
+		ORDER BY BB_COMMENT_SEQ DESC
+        LIMIT #{offset}, #{limit} 
+
+    </select>
+    
+    <update id="updateBoardHitsComment" parameterType="com.ein.board.form.BoardCommentForm">
+    
+        UPDATE ein_lee.BASIC_BOARD_COMMENT
+           SET BB_COMMENT_HITS = BB_COMMENT_HITS + 1             
+         WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq}
+    
+    </update>
+    
+    <select id="getBoardDetailComment" parameterType="com.ein.board.form.BoardCommentForm" resultType="com.ein.board.dto.BoardCommentDto">
+    
+        SELECT BB_COMMENT_SEQ  
+             , BB_COMMENT_WRITER   
+             , BB_COMMENT_SUBJECT  
+             , BB_COMMENT_CONTENT  
+             , BB_COMMENT_HITS  
+             , CAST( DATE_FORMAT( BB_COMMENT_INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS BB_COMMENT_INS_DATE 
+        FROM ein_lee.BASIC_BOARD_COMMENT
+        WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq}
+    
+    </select>
+    
+    <select id="getBoardCommentFileList" parameterType="com.ein.board.form.BoardCommentFileForm" resultType="com.ein.board.dto.BoardCommentFileDto">
+    
+        SELECT BB_COMMENT_SEQ
+             , FILE_NO
+             , FILE_NAME_KEY
+             , FILE_NAME
+             , FILE_PATH
+             , FILE_SIZE
+            , CAST( DATE_FORMAT( INS_DATE, '%Y-%m-%d %H:%i:%s' ) AS CHAR(19) ) AS INS_DATE
+            , FILE_YN
+        FROM ein_lee.BASIC_BOARD_COMMENT_ADD
+        WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq} and FILE_YN="Y"
+
+    </select>
+    
+    <insert id="insertBoardComment" parameterType="com.ein.board.form.BoardCommentForm">
+    
+    	<selectKey resultType="int" keyProperty="bb_Comment_Seq" order="AFTER">
+ 
+            SELECT LAST_INSERT_ID()
+ 
+        </selectKey>
+    
+        INSERT 
+        INTO ein_lee.BASIC_BOARD_COMMENT
+        (
+              BB_COMMENT_WRITER   
+              , BB_COMMENT_SUBJECT  
+              , BB_COMMENT_CONTENT   
+              , BB_COMMENT_INS_DATE  
+        ) 
+        VALUES 
+        (
+            #{bb_Comment_Writer}
+            , #{bb_Comment_Subject}
+            , #{bb_Comment_Content}
+            , NOW() 
+        )
+    
+    </insert>
+    
+    <insert id="insertBoardCommentFile" parameterType="com.ein.board.form.BoardCommentFileForm">
+    
+        <selectKey resultType="int" keyProperty="file_no" order="BEFORE">
+            
+            SELECT IFNULL(MAX(FILE_NO), 0) + 1 
+            FROM ein_lee.BASIC_BOARD_COMMENT_ADD
+            WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq}
+              
+        </selectKey>
+                
+        INSERT 
+        INTO BASIC_BOARD_COMMENT_ADD
+        (
+              BB_COMMENT_SEQ
+            , FILE_NO
+            , FILE_NAME_KEY
+            , FILE_NAME
+            , FILE_PATH
+            , FILE_SIZE
+            , INS_DATE    
+            , FILE_YN        
+        )
+        VALUES
+        (
+              #{bb_Comment_Seq}
+            , #{file_no}
+            , #{file_name_key}
+            , #{file_name}
+            , #{file_path}
+            , #{file_size}
+            , NOW()
+            , "Y"  
+        )    
+        
+    </insert>
+    
+    <delete id="deleteBoardComment" parameterType="com.ein.board.form.BoardCommentForm">
+    
+        DELETE 
+        FROM BASIC_BOARD_COMMENT
+        WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq}
+    
+    </delete>
+    
+    
+    <delete id="deleteBoardCommentFile" parameterType="com.ein.board.form.BoardCommentFileForm">
+    	
+        update ein_lee.BASIC_BOARD_COMMENT_ADD
+		set FILE_YN = "N"
+		WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq} and FILE_NO = #{file_no};
+    
+    </delete>
+    
+    <update id="updateBoardComment" parameterType="com.ein.board.form.BoardCommentForm">
+    
+        UPDATE ein_lee.BASIC_BOARD_COMMENT
+           SET BB_COMMENT_SUBJECT = #{bb_Comment_Subject}
+           	 , BB_COMMENT_WRITER   = #{bb_Comment_Writer}
+             , BB_COMMENT_CONTENT  = #{bb_Comment_Content}
+         WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq}
+    
+    </update>
+    
+    <!-- 게시글 번호에 해당하는 댓글 불러오기 --> 
+	<select id="getBoardListCommentCom" parameterType="com.ein.board.form.BoardCommentComForm" resultType="com.ein.board.dto.BoardCommentComDto">
+		
+		SELECT COM_NO
+			 , BB_COMMENT_SEQ
+			 , COM_CONTENT
+			 , CAST( DATE_FORMAT( INS_DATE, '%Y-%m-%d' ) AS CHAR(19) ) AS INS_DATE
+		FROM BASIC_BOARD_COMMENT_COM
+		WHERE BB_COMMENT_SEQ = #{bb_Comment_Seq}
+		ORDER BY COM_NO ASC;
+		
+	</select>
+	
+	<!-- 댓글 등록하기 -->
+	<insert id="insertBoardCommentCom" parameterType="com.ein.board.form.BoardCommentComForm">
+		
+		INSERT
+		INTO ein_lee.BASIC_BOARD_COMMENT_COM
+		(
+			BB_COMMENT_SEQ
+			, COM_CONTENT
+			, INS_DATE
+		)
+		VALUES
+		(
+			#{bb_Comment_Seq}
+			, #{com_Content}
+			, NOW()
+		)
+		
+	</insert>
+	
+	<!-- 댓글 삭제하기 -->
+	<delete id="deleteBoardCommentCom" parameterType="com.ein.board.form.BoardCommentForm">
+		
+		DELETE FROM BASIC_BOARD_COMMENT_COM
+		WHERE COM_NO = #{com_No}
+		
+	</delete>
+    
+    
+	
+	
+</mapper>
